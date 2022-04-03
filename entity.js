@@ -102,8 +102,11 @@ var CarrotPlant = /** @class */ (function (_super) {
 }(Entity));
 var OnionPlant = /** @class */ (function (_super) {
     __extends(OnionPlant, _super);
-    function OnionPlant(x, y) {
-        return _super.call(this, x, y, "onion") || this;
+    function OnionPlant(x, y, stage, planted) {
+        var _this = _super.call(this, x, y, "onion") || this;
+        _this.stage = stage;
+        _this.planted = planted;
+        return _this;
     }
     OnionPlant.prototype.render = function (game) {
         if (game.rpx(this.x) < -50 || game.rpx(this.x) > game.ctx.canvas.width ||
@@ -122,6 +125,7 @@ var Enemy = /** @class */ (function (_super) {
         _this.health = health;
         _this.angle = 0;
         _this.damageAimed = 0;
+        _this.damageTimer = 5;
         return _this;
     }
     Enemy.prototype.update = function (game) {
@@ -131,10 +135,12 @@ var Enemy = /** @class */ (function (_super) {
         this.angle = Math.atan2(game.house.y - this.y, game.house.x - this.x);
         this.x += Math.cos(this.angle);
         this.y += Math.sin(this.angle);
+        this.damageTimer--;
         return false;
     };
     Enemy.prototype.takeDamage = function (damage) {
         this.health -= damage;
+        this.damageTimer = 5;
     };
     return Enemy;
 }(Entity));

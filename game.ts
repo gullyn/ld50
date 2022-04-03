@@ -62,6 +62,9 @@ class Game {
 	public carrotDiscovered: boolean;
 	public onionDiscovered: boolean;
 
+	public inIntro: boolean;
+	public introStage: number;
+
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.player = new Player(0, 0);
 		this.house = new House(0, 0);
@@ -90,6 +93,9 @@ class Game {
 		this.carrotDiscovered = false;
 		this.onionDiscovered = false;
 
+		this.inIntro = true;
+		this.introStage = 0;
+
 		this.assets = {
 			rock: getImage("assets/rock.png"),
 			rocklarge: getImage("assets/rocklarge.png"),
@@ -102,12 +108,14 @@ class Game {
 			potato: getImage("assets/potato.png"),
 			potatolarge: getImage("assets/potatolarge.png"),
 			carrot: getImage("assets/carrot.png"),
-			carrotlarge: getImage("assets/carrotlarge.png")
+			carrotlarge: getImage("assets/carrotlarge.png"),
+			onion: getImage("assets/onion.png"),
+			onionlarge: getImage("assets/onionlarge.png")
 		};
 	}
 
 	update() {
-		if (this.newItemUnlocked) {
+		if (this.newItemUnlocked || this.inIntro) {
 			this.render();
 			window.requestAnimationFrame(this.update.bind(this));
 			return;
@@ -169,6 +177,12 @@ class Game {
 				this.newItemName = "Carrot";
 				this.newItemText = ["Its aerodynamic shape allows it to slice", "through enemies and travel faster than potatoes."];
 				this.newItemImage = this.assets.carrotlarge;
+			} else if (this.harvestingEntity.type === "onion" && !this.onionDiscovered) {
+				this.onionDiscovered = true;
+				this.newItemUnlocked = true;
+				this.newItemName = "Onion";
+				this.newItemText = ["The most feared of all weapons,", "onions can destroy all but the most powerful enemies."];
+				this.newItemImage = this.assets.onionlarge;
 			}
 
 			this.world.removeEntity(this.harvestingEntity);
@@ -266,7 +280,7 @@ class Game {
 			}
 		}
 
-		const opacity = Math.max(Math.abs(this.time - 9000) / 9000 - 0.3, 0);
+		const opacity = Math.max(Math.abs(this.time - 9000) / 9000 - 0.5, 0);
 
 		this.ctx.fillStyle = "rgba(0, 0, 0, " + opacity + ")";
 		this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
@@ -282,6 +296,42 @@ class Game {
 
 		this.ctx.fillText(text, this.ctx.canvas.width - 20, this.ctx.canvas.height - 40);
 
+		const angle = Math.atan2(this.house.y - this.player.y, this.house.x - this.player.x);
+		let x = this.ctx.canvas.width / 2;
+		let y = this.ctx.canvas.height / 2;
+
+		while (Math.min(x, Math.abs(this.ctx.canvas.width - x)) > 70 && Math.min(y, Math.abs(this.ctx.canvas.height - y)) > 70) {
+			x += Math.cos(angle);
+			y += Math.sin(angle);
+		}
+
+		if (Math.abs(x - this.ctx.canvas.width / 2) + Math.abs(y - this.ctx.canvas.height / 2) < dist(this.house.x, this.house.y, this.player.x, this.player.y)) {
+			this.ctx.save();
+			this.ctx.translate(x, y);
+			this.ctx.rotate(angle);
+			this.ctx.fillStyle = "black";
+			this.ctx.fillRect(-40, -10, 80, 20);
+			this.ctx.restore();
+		}
+
+		this.ctx.textAlign = "left";
+		this.ctx.font = "20px Arial";
+
+		this.ctx.drawImage(this.assets.onion, 10, this.ctx.canvas.height - 220, 50, 50);
+		this.ctx.fillText(this.player.inventory.onion.toString(), 65, this.ctx.canvas.height - 190);
+
+		this.ctx.drawImage(this.assets.carrot, 10, this.ctx.canvas.height - 180, 50, 50);
+		this.ctx.fillText(this.player.inventory.carrot.toString(), 65, this.ctx.canvas.height - 150);
+
+		this.ctx.drawImage(this.assets.potato, 10, this.ctx.canvas.height - 140, 50, 50);
+		this.ctx.fillText(this.player.inventory.potato.toString(), 65, this.ctx.canvas.height - 110);
+
+		this.ctx.drawImage(this.assets.rock, 10, this.ctx.canvas.height - 100, 50, 50);
+		this.ctx.fillText(this.player.inventory.stone.toString(), 65, this.ctx.canvas.height - 70);
+
+		this.ctx.drawImage(this.assets.loglarge, 10, this.ctx.canvas.height - 60, 50, 50);
+		this.ctx.fillText(this.player.inventory.wood.toString(), 65, this.ctx.canvas.height - 30);
+
 		if (this.newItemUnlocked) {
 			this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
 			this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
@@ -296,6 +346,35 @@ class Game {
 			this.ctx.font = "30px Courier New";
 			this.ctx.fillText(this.newItemText[0], this.ctx.canvas.width / 2, this.ctx.canvas.height - 200);
 			this.ctx.fillText(this.newItemText[1], this.ctx.canvas.width / 2, this.ctx.canvas.height - 160);
+			this.ctx.fillText("Press space to continue", this.ctx.canvas.width / 2, this.ctx.canvas.height - 100);
+		}
+
+		if (this.inIntro) {
+			this.ctx.textAlign = "center";
+			this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+			this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+			this.ctx.fillStyle = "white";
+
+			switch (this.introStage) {
+				case 0:
+					this.ctx.font = "70px Arial";
+					this.ctx.fillText("The Gardener", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+					break;
+				case 1:
+					this.ctx.font = "30px Arial";
+					this.ctx.fillText("Oh no! Interest rates are rising, and you can't pay your mortgage!", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+					break;
+				case 2:
+					this.ctx.font = "30px Arial";
+					this.ctx.fillText("Those pesky debt collectors are going to take your house!", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+					break;
+				case 3:
+					this.ctx.font = "30px Arial";
+					this.ctx.fillText("You do have gardening skills - maybe those will help?", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+					break;
+			}
+
+			this.ctx.font = "30px Courier New";
 			this.ctx.fillText("Press space to continue", this.ctx.canvas.width / 2, this.ctx.canvas.height - 100);
 		}
 	}
@@ -495,6 +574,10 @@ class Game {
 
 		if (event.key === " ") {
 			this.newItemUnlocked = false;
+			this.introStage++;
+			if (this.introStage >= 4) {
+				this.inIntro = false;
+			}
 		}
 	}
 

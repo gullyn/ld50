@@ -8,6 +8,7 @@ var World = /** @class */ (function () {
         this.generateWorld();
         this.findHousePos(game);
         this.deleteOverlappingEntities();
+        this.createRock(game);
     }
     World.prototype.update = function (game) {
         for (var _i = 0, _a = this.entities; _i < _a.length; _i++) {
@@ -46,6 +47,9 @@ var World = /** @class */ (function () {
                 else if (this.grid[x][y].type === "grass") {
                     color = "#348c31";
                 }
+                else if (this.grid[x][y].type === "rock") {
+                    color = "#888";
+                }
                 game.ctx.fillStyle = color;
                 game.ctx.fillRect(rpx, rpy, 51, 51);
             }
@@ -77,7 +81,7 @@ var World = /** @class */ (function () {
             do {
                 var x = Math.floor(Math.random() * this.width);
                 var y = Math.floor(Math.random() * this.height);
-            } while (this.grid[x][y].type !== "grass" && this.grid[x][y].type !== "sand");
+            } while (this.grid[x][y].type !== "grass" && this.grid[x][y].type !== "sand" && this.grid[x][y].type !== "rock");
             this.entities.push(new Rock((x - this.width / 2) * 50, (y - this.height / 2) * 50));
         }
         for (var i = 0; i < 50; i++) {
@@ -180,6 +184,37 @@ var World = /** @class */ (function () {
                     break;
                 }
             }
+        }
+    };
+    World.prototype.createRock = function (game) {
+        for (var x_2 = 0; x_2 < this.width; x_2++) {
+            for (var y_2 = 0; y_2 < this.height; y_2++) {
+                var tile = this.grid[x_2][y_2];
+                if (tile.type !== "sand" && tile.type !== "grass") {
+                    continue;
+                }
+                var val = Math.abs(noise.perlin2((x_2 + 1e6) / 50, (y_2 + 1e6) / 50));
+                if (dist(tile.displayX, tile.displayY, game.house.x, game.house.y) < 2500) {
+                    continue;
+                }
+                if (val > 0.5) {
+                    tile.type = "rock";
+                }
+            }
+        }
+        for (var i = this.entities.length - 1; i > -1; i--) {
+            var e = this.entities[i];
+            if (this.grid[Math.floor(e.x / 50) + this.width / 2][Math.floor(e.y / 50) + this.height / 2].type === "rock" &&
+                e.type !== "rock") {
+                this.entities.splice(i, 1);
+            }
+        }
+        for (var i = 0; i < 20; i++) {
+            do {
+                var x = Math.floor(Math.random() * this.width);
+                var y = Math.floor(Math.random() * this.height);
+            } while (this.grid[x][y].type !== "rock");
+            this.entities.push(new OnionPlant((x - this.width / 2) * 50, (y - this.height / 2) * 50, Math.floor(Math.random() * 3), false));
         }
     };
     return World;

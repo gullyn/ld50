@@ -14,7 +14,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 var Bullet = /** @class */ (function () {
-    function Bullet(x, y, type, angle, speed, lifetime, damage, image, target) {
+    function Bullet(x, y, type, angle, speed, lifetime, damage, image, target, homing) {
         this.x = x;
         this.y = y;
         this.type = type;
@@ -24,6 +24,7 @@ var Bullet = /** @class */ (function () {
         this.damage = damage;
         this.image = image;
         this.target = target;
+        this.homing = homing;
         this.target.damageAimed += this.damage;
     }
     Bullet.prototype.update = function (game) {
@@ -36,11 +37,29 @@ var Bullet = /** @class */ (function () {
         for (var _i = 0, _a = game.enemies; _i < _a.length; _i++) {
             var enemy = _a[_i];
             if (dist(enemy.x, enemy.y, this.x, this.y) < 25) {
-                if (this.target === enemy) {
-                    this.target.damageAimed -= this.damage;
+                this.target.damageAimed -= this.damage;
+                if (enemy.damageTimer <= 0) {
+                    enemy.takeDamage(this.damage);
                 }
-                enemy.takeDamage(this.damage);
-                return true;
+                if (!this.homing) {
+                    return true;
+                }
+                var min = null, minDist = Infinity;
+                for (var _b = 0, _c = game.enemies; _b < _c.length; _b++) {
+                    var e = _c[_b];
+                    if (e === enemy) {
+                        continue;
+                    }
+                    if (dist(e.x, e.y, this.x, this.y) < minDist) {
+                        minDist = dist(e.x, e.y, this.x, this.y);
+                        min = e;
+                    }
+                }
+                if (min === null) {
+                    break;
+                }
+                this.angle = Math.atan2(min.y - this.y, min.x - this.x);
+                break;
             }
         }
         return false;
@@ -53,21 +72,21 @@ var Bullet = /** @class */ (function () {
 var PotatoBullet = /** @class */ (function (_super) {
     __extends(PotatoBullet, _super);
     function PotatoBullet(x, y, angle, game, target) {
-        return _super.call(this, x, y, "potatobullet", angle, 10, 120, 3, game.assets.potato, target) || this;
+        return _super.call(this, x, y, "potatobullet", angle, 10, 120, 3, game.assets.potato, target, false) || this;
     }
     return PotatoBullet;
 }(Bullet));
 var CarrotBullet = /** @class */ (function (_super) {
     __extends(CarrotBullet, _super);
     function CarrotBullet(x, y, angle, game, target) {
-        return _super.call(this, x, y, "carrotbullet", angle, 15, 200, 6, game.assets.potato, target) || this;
+        return _super.call(this, x, y, "carrotbullet", angle, 15, 200, 6, game.assets.carrot, target, false) || this;
     }
     return CarrotBullet;
 }(Bullet));
 var OnionBullet = /** @class */ (function (_super) {
     __extends(OnionBullet, _super);
     function OnionBullet(x, y, angle, game, target) {
-        return _super.call(this, x, y, "onionbullet", angle, 8, 200, 20, game.assets.potato, target) || this;
+        return _super.call(this, x, y, "onionbullet", angle, 8, 200, 5, game.assets.onion, target, true) || this;
     }
     return OnionBullet;
 }(Bullet));

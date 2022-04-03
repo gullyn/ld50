@@ -84,6 +84,15 @@ var CarrotCannon = /** @class */ (function (_super) {
     function CarrotCannon(x, y) {
         return _super.call(this, x, y, "carrotcannon", 100, 10, 1000) || this;
     }
+    CarrotCannon.prototype.render = function (game) {
+        game.ctx.fillStyle = "beige";
+        game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+        game.ctx.drawImage(game.assets.carrot, game.rpx(this.x) - 15, game.rpy(this.y) + 40);
+        game.ctx.fillStyle = "black";
+        game.ctx.font = "15px Arial";
+        game.ctx.textAlign = "left";
+        game.ctx.fillText(this.storage.toString(), game.rpx(this.x) + 30, game.rpy(this.y) + 70);
+    };
     return CarrotCannon;
 }(Turret));
 var HomingOnions = /** @class */ (function (_super) {
@@ -91,5 +100,14 @@ var HomingOnions = /** @class */ (function (_super) {
     function HomingOnions(x, y) {
         return _super.call(this, x, y, "homingonions", 120, 5, 700) || this;
     }
+    HomingOnions.prototype.render = function (game) {
+        game.ctx.fillStyle = "beige";
+        game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+        game.ctx.drawImage(game.assets.onion, game.rpx(this.x) - 15, game.rpy(this.y) + 40);
+        game.ctx.fillStyle = "black";
+        game.ctx.font = "15px Arial";
+        game.ctx.textAlign = "left";
+        game.ctx.fillText(this.storage.toString(), game.rpx(this.x) + 30, game.rpy(this.y) + 70);
+    };
     return HomingOnions;
 }(Turret));

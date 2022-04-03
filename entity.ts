@@ -100,8 +100,13 @@ class CarrotPlant extends Entity {
 }
 
 class OnionPlant extends Entity {
-	constructor(x: number, y: number) {
+	public stage: number;
+	public planted: boolean;
+
+	constructor(x: number, y: number, stage: number, planted: boolean) {
 		super(x, y, "onion");
+		this.stage = stage;
+		this.planted = planted;
 	}
 
 	render(game: Game) {
@@ -118,12 +123,14 @@ class Enemy extends Entity {
 	public health: number;
 	public angle: number;
 	public damageAimed: number;
+	public damageTimer: number;
 
 	constructor(x: number, y: number, type: string, health: number) {
 		super(x, y, type);
 		this.health = health;
 		this.angle = 0;
 		this.damageAimed = 0;
+		this.damageTimer = 5;
 	}
 
 	update(game: Game): boolean {
@@ -134,12 +141,14 @@ class Enemy extends Entity {
 
 		this.x += Math.cos(this.angle);
 		this.y += Math.sin(this.angle);
+		this.damageTimer--;
 
 		return false;
 	}
 
 	takeDamage(damage: number) {
 		this.health -= damage;
+		this.damageTimer = 5;
 	}
 }
 

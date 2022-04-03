@@ -15,6 +15,7 @@ class World {
 		this.generateWorld();
 		this.findHousePos(game);
 		this.deleteOverlappingEntities();
+		this.createRock(game);
 	}
 
 	update(game: Game) {
@@ -53,6 +54,8 @@ class World {
 					color = "#ff0";
 				} else if (this.grid[x][y].type === "grass") {
 					color = "#348c31";
+				} else if (this.grid[x][y].type === "rock") {
+					color = "#888";
 				}
 
 				game.ctx.fillStyle = color;
@@ -94,7 +97,7 @@ class World {
 			do {
 				var x = Math.floor(Math.random() * this.width);
 				var y = Math.floor(Math.random() * this.height);
-			} while (this.grid[x][y].type !== "grass" && this.grid[x][y].type !== "sand");
+			} while (this.grid[x][y].type !== "grass" && this.grid[x][y].type !== "sand" && this.grid[x][y].type !== "rock");
 
 			this.entities.push(new Rock((x - this.width / 2) * 50, (y - this.height / 2) * 50));
 		}
@@ -215,6 +218,44 @@ class World {
 					break;
 				}
 			}
+		}
+	}
+
+	createRock(game: Game) {
+		for (let x = 0; x < this.width; x++) {
+			for (let y = 0; y < this.height; y++) {
+				const tile = this.grid[x][y];
+				if (tile.type !== "sand" && tile.type !== "grass") {
+					continue;
+				}
+
+				const val = Math.abs((noise as any).perlin2((x + 1e6) / 50, (y + 1e6) / 50));
+
+				if (dist(tile.displayX, tile.displayY, game.house.x, game.house.y) < 2500) {
+					continue;
+				}
+				
+				if (val > 0.5) {
+					tile.type = "rock";
+				}
+			}
+		}
+
+		for (let i = this.entities.length - 1; i > -1; i--) {
+			const e = this.entities[i];
+			if (this.grid[Math.floor(e.x / 50) + this.width / 2][Math.floor(e.y / 50) + this.height / 2].type === "rock" &&
+				e.type !== "rock") {
+				this.entities.splice(i, 1);
+			}
+		}
+
+		for (let i = 0; i < 20; i++) {
+			do {
+				var x = Math.floor(Math.random() * this.width);
+				var y = Math.floor(Math.random() * this.height);
+			} while (this.grid[x][y].type !== "rock");
+
+			this.entities.push(new OnionPlant((x - this.width / 2) * 50, (y - this.height / 2) * 50, Math.floor(Math.random() * 3), false));
 		}
 	}
 }

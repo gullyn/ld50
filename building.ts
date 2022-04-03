@@ -80,10 +80,32 @@ class CarrotCannon extends Turret {
 	constructor(x: number, y: number) {
 		super(x, y, "carrotcannon", 100, 10, 1000);
 	}
+
+	render(game: Game) {
+		game.ctx.fillStyle = "beige";
+		game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+
+		game.ctx.drawImage(game.assets.carrot, game.rpx(this.x) - 15, game.rpy(this.y) + 40);
+		game.ctx.fillStyle = "black";
+		game.ctx.font = "15px Arial";
+		game.ctx.textAlign = "left";
+		game.ctx.fillText(this.storage.toString(), game.rpx(this.x) + 30, game.rpy(this.y) + 70);
+	}
 }
 
 class HomingOnions extends Turret {
 	constructor(x: number, y: number) {
 		super(x, y, "homingonions", 120, 5, 700);
+	}
+
+	render(game: Game) {
+		game.ctx.fillStyle = "beige";
+		game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+
+		game.ctx.drawImage(game.assets.onion, game.rpx(this.x) - 15, game.rpy(this.y) + 40);
+		game.ctx.fillStyle = "black";
+		game.ctx.font = "15px Arial";
+		game.ctx.textAlign = "left";
+		game.ctx.fillText(this.storage.toString(), game.rpx(this.x) + 30, game.rpy(this.y) + 70);
 	}
 }

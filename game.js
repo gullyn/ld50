@@ -49,6 +49,8 @@ var Game = /** @class */ (function () {
         this.potatoDiscovered = false;
         this.carrotDiscovered = false;
         this.onionDiscovered = false;
+        this.inIntro = true;
+        this.introStage = 0;
         this.assets = {
             rock: getImage("assets/rock.png"),
             rocklarge: getImage("assets/rocklarge.png"),
@@ -61,11 +63,13 @@ var Game = /** @class */ (function () {
             potato: getImage("assets/potato.png"),
             potatolarge: getImage("assets/potatolarge.png"),
             carrot: getImage("assets/carrot.png"),
-            carrotlarge: getImage("assets/carrotlarge.png")
+            carrotlarge: getImage("assets/carrotlarge.png"),
+            onion: getImage("assets/onion.png"),
+            onionlarge: getImage("assets/onionlarge.png")
         };
     }
     Game.prototype.update = function () {
-        if (this.newItemUnlocked) {
+        if (this.newItemUnlocked || this.inIntro) {
             this.render();
             window.requestAnimationFrame(this.update.bind(this));
             return;
@@ -126,6 +130,13 @@ var Game = /** @class */ (function () {
                 this.newItemText = ["Its aerodynamic shape allows it to slice", "through enemies and travel faster than potatoes."];
                 this.newItemImage = this.assets.carrotlarge;
             }
+            else if (this.harvestingEntity.type === "onion" && !this.onionDiscovered) {
+                this.onionDiscovered = true;
+                this.newItemUnlocked = true;
+                this.newItemName = "Onion";
+                this.newItemText = ["The most feared of all weapons,", "onions can destroy all but the most powerful enemies."];
+                this.newItemImage = this.assets.onionlarge;
+            }
             this.world.removeEntity(this.harvestingEntity);
             this.harvestingEntity = null;
         }
@@ -154,12 +165,12 @@ var Game = /** @class */ (function () {
             enemy.render(this);
         }
         if (this.harvestingEntity !== null) {
-            var x = this.rpx(this.harvestingEntity.x);
-            var y = this.rpy(this.harvestingEntity.y) + 55;
+            var x_1 = this.rpx(this.harvestingEntity.x);
+            var y_1 = this.rpy(this.harvestingEntity.y) + 55;
             this.ctx.fillStyle = "black";
-            this.ctx.fillRect(x, y, 50, 15);
+            this.ctx.fillRect(x_1, y_1, 50, 15);
             this.ctx.fillStyle = "blue";
-            this.ctx.fillRect(x + 2, y + 2, 46 * (this.harvestingTime / 100), 11);
+            this.ctx.fillRect(x_1 + 2, y_1 + 2, 46 * (this.harvestingTime / 100), 11);
         }
         if (this.selectedTile !== null) {
             var tileX = this.rpx((this.selectedTile.x - this.world.width / 2) * 50);
@@ -211,7 +222,7 @@ var Game = /** @class */ (function () {
                 this.messages.splice(i, 1);
             }
         }
-        var opacity = Math.max(Math.abs(this.time - 9000) / 9000 - 0.3, 0);
+        var opacity = Math.max(Math.abs(this.time - 9000) / 9000 - 0.5, 0);
         this.ctx.fillStyle = "rgba(0, 0, 0, " + opacity + ")";
         this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
         this.ctx.textAlign = "right";
@@ -221,6 +232,33 @@ var Game = /** @class */ (function () {
         var minutes = Math.floor(this.time / 18000 * 1440) % 60;
         var text = hours + ":" + (minutes < 10 ? "0" + minutes : minutes) + " (Day " + this.day + ")";
         this.ctx.fillText(text, this.ctx.canvas.width - 20, this.ctx.canvas.height - 40);
+        var angle = Math.atan2(this.house.y - this.player.y, this.house.x - this.player.x);
+        var x = this.ctx.canvas.width / 2;
+        var y = this.ctx.canvas.height / 2;
+        while (Math.min(x, Math.abs(this.ctx.canvas.width - x)) > 70 && Math.min(y, Math.abs(this.ctx.canvas.height - y)) > 70) {
+            x += Math.cos(angle);
+            y += Math.sin(angle);
+        }
+        if (Math.abs(x - this.ctx.canvas.width / 2) + Math.abs(y - this.ctx.canvas.height / 2) < dist(this.house.x, this.house.y, this.player.x, this.player.y)) {
+            this.ctx.save();
+            this.ctx.translate(x, y);
+            this.ctx.rotate(angle);
+            this.ctx.fillStyle = "black";
+            this.ctx.fillRect(-40, -10, 80, 20);
+            this.ctx.restore();
+        }
+        this.ctx.textAlign = "left";
+        this.ctx.font = "20px Arial";
+        this.ctx.drawImage(this.assets.onion, 10, this.ctx.canvas.height - 220, 50, 50);
+        this.ctx.fillText(this.player.inventory.onion.toString(), 65, this.ctx.canvas.height - 190);
+        this.ctx.drawImage(this.assets.carrot, 10, this.ctx.canvas.height - 180, 50, 50);
+        this.ctx.fillText(this.player.inventory.carrot.toString(), 65, this.ctx.canvas.height - 150);
+        this.ctx.drawImage(this.assets.potato, 10, this.ctx.canvas.height - 140, 50, 50);
+        this.ctx.fillText(this.player.inventory.potato.toString(), 65, this.ctx.canvas.height - 110);
+        this.ctx.drawImage(this.assets.rock, 10, this.ctx.canvas.height - 100, 50, 50);
+        this.ctx.fillText(this.player.inventory.stone.toString(), 65, this.ctx.canvas.height - 70);
+        this.ctx.drawImage(this.assets.loglarge, 10, this.ctx.canvas.height - 60, 50, 50);
+        this.ctx.fillText(this.player.inventory.wood.toString(), 65, this.ctx.canvas.height - 30);
         if (this.newItemUnlocked) {
             this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
             this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
@@ -234,6 +272,32 @@ var Game = /** @class */ (function () {
             this.ctx.font = "30px Courier New";
             this.ctx.fillText(this.newItemText[0], this.ctx.canvas.width / 2, this.ctx.canvas.height - 200);
             this.ctx.fillText(this.newItemText[1], this.ctx.canvas.width / 2, this.ctx.canvas.height - 160);
+            this.ctx.fillText("Press space to continue", this.ctx.canvas.width / 2, this.ctx.canvas.height - 100);
+        }
+        if (this.inIntro) {
+            this.ctx.textAlign = "center";
+            this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+            this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+            this.ctx.fillStyle = "white";
+            switch (this.introStage) {
+                case 0:
+                    this.ctx.font = "70px Arial";
+                    this.ctx.fillText("The Gardener", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+                    break;
+                case 1:
+                    this.ctx.font = "30px Arial";
+                    this.ctx.fillText("Oh no! Interest rates are rising, and you can't pay your mortgage!", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+                    break;
+                case 2:
+                    this.ctx.font = "30px Arial";
+                    this.ctx.fillText("Those pesky debt collectors are going to take your house!", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+                    break;
+                case 3:
+                    this.ctx.font = "30px Arial";
+                    this.ctx.fillText("You do have gardening skills - maybe those will help?", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+                    break;
+            }
+            this.ctx.font = "30px Courier New";
             this.ctx.fillText("Press space to continue", this.ctx.canvas.width / 2, this.ctx.canvas.height - 100);
         }
     };
@@ -405,6 +469,10 @@ var Game = /** @class */ (function () {
         this.keys[event.key.toLowerCase()] = true;
         if (event.key === " ") {
             this.newItemUnlocked = false;
+            this.introStage++;
+            if (this.introStage >= 4) {
+                this.inIntro = false;
+            }
         }
     };
     Game.prototype.onkeyup = function (event) {
