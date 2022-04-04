@@ -94,8 +94,23 @@ class CarrotPlant extends Entity {
 			game.rpy(this.y) < -50 || game.rpy(this.y) > game.ctx.canvas.height) {
 			return;
 		}
-		game.ctx.fillStyle = "orange";
-		game.ctx.fillRect(game.rpx(this.x) + 10, game.rpy(this.y) + 10, 10, 10);
+
+		if (this.planted) {
+			game.ctx.fillStyle = "#698c31";
+			game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+		}
+
+		switch (this.stage) {
+			case 0:
+				game.ctx.drawImage(game.assets.carrotstage1, game.rpx(this.x), game.rpy(this.y));
+				break;
+			case 1:
+				game.ctx.drawImage(game.assets.carrotstage2, game.rpx(this.x), game.rpy(this.y));
+				break;
+			case 2:
+				game.ctx.drawImage(game.assets.carrotstage3, game.rpx(this.x), game.rpy(this.y));
+				break;
+		}
 	}
 }
 
@@ -124,6 +139,7 @@ class Enemy extends Entity {
 	public angle: number;
 	public damageAimed: number;
 	public damageTimer: number;
+	public hitTime: number;
 
 	constructor(x: number, y: number, type: string, health: number) {
 		super(x, y, type);
@@ -131,6 +147,7 @@ class Enemy extends Entity {
 		this.angle = 0;
 		this.damageAimed = 0;
 		this.damageTimer = 5;
+		this.hitTime = 120;
 	}
 
 	update(game: Game): boolean {
@@ -139,9 +156,21 @@ class Enemy extends Entity {
 		}
 		this.angle = Math.atan2(game.house.y - this.y, game.house.x - this.x);
 
-		this.x += Math.cos(this.angle);
-		this.y += Math.sin(this.angle);
+		const newX = this.x + Math.cos(this.angle);
+		const newY = this.y + Math.sin(this.angle);
+
+		if ((newX + 25 >= game.house.x - 75 && newX - 25 <= game.house.x + 75)
+			&& newY + 25 >= game.house.y - 75 && newY - 25 <= game.house.y + 100) {
+			if (this.hitTime <= 0) {
+				game.house.health -= 10;
+				this.hitTime = 120;
+			}
+		} else {
+			this.x = newX;
+			this.y = newY;
+		}
 		this.damageTimer--;
+		this.hitTime--;
 
 		return false;
 	}

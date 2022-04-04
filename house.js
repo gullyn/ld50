@@ -19,7 +19,7 @@ var House = /** @class */ (function () {
             game.ctx.fillStyle = "red";
             game.ctx.fillRect(game.rpx(this.x) - 97, game.rpy(this.y) - 167, 194, 14);
             game.ctx.fillStyle = "green";
-            game.ctx.fillRect(game.rpx(this.x) - 97, game.rpy(this.y) - 167, 194 * (this.health / 100), 14);
+            game.ctx.fillRect(game.rpx(this.x) - 97, game.rpy(this.y) - 167, 194 * (Math.max(this.health, 0) / 100), 14);
         }
     };
     return House;

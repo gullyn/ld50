@@ -65,6 +65,10 @@ class Game {
 	public inIntro: boolean;
 	public introStage: number;
 
+	public gameOver: boolean;
+	public gameOverOpacity: number;
+	public score: number;
+
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.player = new Player(0, 0);
 		this.house = new House(0, 0);
@@ -96,6 +100,10 @@ class Game {
 		this.inIntro = true;
 		this.introStage = 0;
 
+		this.gameOver = false;
+		this.gameOverOpacity = 0;
+		this.score = 0;
+
 		this.assets = {
 			rock: getImage("assets/rock.png"),
 			rocklarge: getImage("assets/rocklarge.png"),
@@ -110,12 +118,15 @@ class Game {
 			carrot: getImage("assets/carrot.png"),
 			carrotlarge: getImage("assets/carrotlarge.png"),
 			onion: getImage("assets/onion.png"),
-			onionlarge: getImage("assets/onionlarge.png")
+			onionlarge: getImage("assets/onionlarge.png"),
+			carrotstage1: getImage("assets/carrotstage1.png"),
+			carrotstage2: getImage("assets/carrotstage2.png"),
+			carrotstage3: getImage("assets/carrotstage3.png")
 		};
 	}
 
 	update() {
-		if (this.newItemUnlocked || this.inIntro) {
+		if (this.newItemUnlocked || this.inIntro || this.gameOver) {
 			this.render();
 			window.requestAnimationFrame(this.update.bind(this));
 			return;
@@ -140,6 +151,7 @@ class Game {
 		for (let i = this.enemies.length - 1; i > -1; i--) {
 			if (this.enemies[i].update(this)) {
 				this.enemies.splice(i, 1);
+				this.score++;
 			}
 		}
 
@@ -169,19 +181,19 @@ class Game {
 				this.potatoDiscovered = true;
 				this.newItemUnlocked = true;
 				this.newItemName = "Potato";
-				this.newItemText = ["Basic ammunition. Easy to farm, though not", "as effective against tougher enemies."];
+				this.newItemText = ["Basic ammunition. Easy to farm, though not", "as effective against tougher debt collectors."];
 				this.newItemImage = this.assets.potatolarge;
 			} else if (this.harvestingEntity.type === "carrot" && !this.carrotDiscovered) {
 				this.carrotDiscovered = true;
 				this.newItemUnlocked = true;
 				this.newItemName = "Carrot";
-				this.newItemText = ["Its aerodynamic shape allows it to slice", "through enemies and travel faster than potatoes."];
+				this.newItemText = ["Its aerodynamic shape allows it to slice", "through debt collectors and travel faster than potatoes."];
 				this.newItemImage = this.assets.carrotlarge;
 			} else if (this.harvestingEntity.type === "onion" && !this.onionDiscovered) {
 				this.onionDiscovered = true;
 				this.newItemUnlocked = true;
 				this.newItemName = "Onion";
-				this.newItemText = ["The most feared of all weapons,", "onions can destroy all but the most powerful enemies."];
+				this.newItemText = ["The most feared of all weapons,", "onions can destroy all but the most powerful debt collectors."];
 				this.newItemImage = this.assets.onionlarge;
 			}
 
@@ -189,6 +201,10 @@ class Game {
 			this.harvestingEntity = null;
 		} else if (this.harvestingEntity !== null) {
 			this.harvestingTime += 2;
+		}
+
+		if (this.house.health <= 0) {
+			this.gameOver = true;
 		}
 
 		this.render();
@@ -203,8 +219,10 @@ class Game {
 		const mouseX = Math.floor((this.mousePosX - this.ctx.canvas.width / 2 + this.player.x) / 50) * 50;
 		const mouseY = Math.floor((this.mousePosY - this.ctx.canvas.height / 2 + this.player.y) / 50) * 50;
 
-		this.ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-		this.ctx.fillRect(this.rpx(mouseX), this.rpy(mouseY), 50, 50);
+		if (!this.inIntro) {
+			this.ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+			this.ctx.fillRect(this.rpx(mouseX), this.rpy(mouseY), 50, 50);
+		}
 
 		this.player.render(this);
 		this.house.render(this);
@@ -332,6 +350,14 @@ class Game {
 		this.ctx.drawImage(this.assets.loglarge, 10, this.ctx.canvas.height - 60, 50, 50);
 		this.ctx.fillText(this.player.inventory.wood.toString(), 65, this.ctx.canvas.height - 30);
 
+		if (this.enemies.length > 0) {
+			this.ctx.textAlign = "center";
+			this.ctx.fillStyle = "white";
+			this.ctx.font = "20px Arial";
+
+			this.ctx.fillText(this.enemies.length + " debt collectors remaining", this.ctx.canvas.width / 2, this.ctx.canvas.height - 30);
+		}
+
 		if (this.newItemUnlocked) {
 			this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
 			this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
@@ -377,6 +403,23 @@ class Game {
 			this.ctx.font = "30px Courier New";
 			this.ctx.fillText("Press space to continue", this.ctx.canvas.width / 2, this.ctx.canvas.height - 100);
 		}
+
+		if (this.gameOver) {
+			this.gameOverOpacity = Math.min(1, this.gameOverOpacity + 0.005);
+			this.ctx.fillStyle = "rgba(0, 0, 0, " + this.gameOverOpacity + ")";
+			this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+
+			this.ctx.font = "60px Courier New";
+			this.ctx.fillStyle = "white";
+			this.ctx.textAlign = "center";
+			this.ctx.fillText("Game over", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+
+			if (this.gameOverOpacity === 1) {
+				this.ctx.font = "30px Courier New";
+				this.ctx.fillText("The debt collectors have foreclosed your house...", this.ctx.canvas.width / 2, this.ctx.canvas.height / 2 + 100);
+				this.ctx.fillText("Total debt collectors killed: " + this.score, this.ctx.canvas.width / 2, this.ctx.canvas.height / 2 + 150);
+			}
+		}
 	}
 
 	generateEnemies() {
@@ -406,7 +449,7 @@ class Game {
 	}
 
 	onmousedown(event: MouseEvent) {
-		if (this.newItemUnlocked) {
+		if (this.newItemUnlocked || this.inIntro) {
 			return;
 		}
 		this.mouseDown = true;
@@ -540,11 +583,7 @@ class Game {
 			}
 
 			if (entity !== null) {
-				if (entity instanceof PotatoPlant) {
-					if (entity.stage === 2) {
-						this.tileOptions.push({ x: 25, y: -40, text: ["Harvest"], id: "harvest" });
-					}
-				} else if (entity instanceof CarrotPlant) {
+				if (entity instanceof PotatoPlant || entity instanceof CarrotPlant || entity instanceof OnionPlant) {
 					if (entity.stage === 2) {
 						this.tileOptions.push({ x: 25, y: -40, text: ["Harvest"], id: "harvest" });
 					}
