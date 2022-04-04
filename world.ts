@@ -64,7 +64,17 @@ class World {
 		}
 
 		for (let i = 0; i < this.entities.length; i++) {
-			this.entities[i].render(game);
+			if (this.entities[i].type !== "stone" && this.entities[i].type !== "wood") {
+				this.entities[i].render(game);
+			}
+		}
+	}
+
+	renderEntities(game: Game) {
+		for (let i = 0; i < this.entities.length; i++) {
+			if (this.entities[i].type === "stone" || this.entities[i].type === "wood") {
+				this.entities[i].render(game);
+			}
 		}
 
 		for (let i = 0; i < this.buildings.length; i++) {

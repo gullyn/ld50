@@ -71,8 +71,18 @@ var Game = /** @class */ (function () {
             onionlarge: getImage("assets/onionlarge.png"),
             carrotstage1: getImage("assets/carrotstage1.png"),
             carrotstage2: getImage("assets/carrotstage2.png"),
-            carrotstage3: getImage("assets/carrotstage3.png")
+            carrotstage3: getImage("assets/carrotstage3.png"),
+            player1: getImage("assets/player1.png"),
+            player2: getImage("assets/player2.png"),
+            player3: getImage("assets/player3.png"),
+            player4: getImage("assets/player4.png"),
+            player5: getImage("assets/player5.png"),
+            player6: getImage("assets/player6.png"),
+            player7: getImage("assets/player7.png"),
+            player8: getImage("assets/player8.png"),
+            debtcollector: getImage("assets/debtcollector.png")
         };
+        this.player.image = this.assets.player1;
     }
     Game.prototype.update = function () {
         if (this.newItemUnlocked || this.inIntro || this.gameOver) {
@@ -168,6 +178,7 @@ var Game = /** @class */ (function () {
         }
         this.player.render(this);
         this.house.render(this);
+        this.world.renderEntities(this);
         for (var _i = 0, _a = this.bullets; _i < _a.length; _i++) {
             var bullet = _a[_i];
             bullet.render(this);

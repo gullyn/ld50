@@ -55,7 +55,16 @@ var World = /** @class */ (function () {
             }
         }
         for (var i = 0; i < this.entities.length; i++) {
-            this.entities[i].render(game);
+            if (this.entities[i].type !== "stone" && this.entities[i].type !== "wood") {
+                this.entities[i].render(game);
+            }
+        }
+    };
+    World.prototype.renderEntities = function (game) {
+        for (var i = 0; i < this.entities.length; i++) {
+            if (this.entities[i].type === "stone" || this.entities[i].type === "wood") {
+                this.entities[i].render(game);
+            }
         }
         for (var i = 0; i < this.buildings.length; i++) {
             this.buildings[i].render(game);

@@ -176,11 +176,10 @@ var Zombie = /** @class */ (function (_super) {
         return _super.call(this, x, y, "zombie", 10) || this;
     }
     Zombie.prototype.render = function (game) {
-        game.ctx.fillStyle = "black";
         game.ctx.save();
         game.ctx.translate(game.rpx(this.x), game.rpy(this.y));
         game.ctx.rotate(this.angle);
-        game.ctx.fillRect(-15, -10, 30, 20);
+        game.ctx.drawImage(game.assets.debtcollector, -50, -46);
         game.ctx.restore();
     };
     return Zombie;
