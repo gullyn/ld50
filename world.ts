@@ -28,6 +28,10 @@ class World {
 				if (Math.random() < 0.0003) {
 					entity.stage = Math.min(entity.stage + 1, 2);
 				}
+			} else if (entity instanceof OnionPlant) {
+				if (Math.random() < 0.0003) {
+					entity.stage = Math.min(entity.stage + 1, 2);
+				}
 			}
 		}
 
