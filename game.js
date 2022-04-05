@@ -60,6 +60,7 @@ var Game = /** @class */ (function () {
         this.instructionX = 0;
         this.instructionY = 0;
         this.showArrow = true;
+        this.currentMusic = 1;
         this.assets = {
             rock: getImage("assets/rock.png"),
             rocklarge: getImage("assets/rocklarge.png"),
@@ -97,6 +98,7 @@ var Game = /** @class */ (function () {
         this.player.image = this.assets.player1;
         this.audio = {
             music1: getAudio("audio/music1.mp3"),
+            music2: getAudio("audio/music2.mp3"),
             shoot1: getAudio("audio/shoot.wav"),
             shoot2: getAudio("audio/shoot.wav"),
             shoot3: getAudio("audio/shoot.wav")
@@ -111,7 +113,17 @@ var Game = /** @class */ (function () {
         this.player.update(this);
         this.house.update(this);
         this.world.update(this);
-        this.time += 1.5;
+        this.time += this.day > 1 ? 2 : 1.5;
+        if (this.audio.music1.ended && this.currentMusic === 1) {
+            this.currentMusic = 2;
+            this.audio.music2.play();
+            this.audio.music2.volume = 0.1;
+        }
+        if (this.audio.music2.ended && this.currentMusic === 2) {
+            this.currentMusic = 1;
+            this.audio.music1.play();
+            this.audio.music1.volume = 0.1;
+        }
         if (this.time > 18000) {
             this.time = 0;
             this.day++;
@@ -179,7 +191,10 @@ var Game = /** @class */ (function () {
                         this.instructionText = ["Click on a rock", "and press 'harvest'."];
                     }
                     else {
-                        this.currentInstruction = 3;
+                        this.instructionText = ["Click on a tile, press 'plant'", "and select 'potato'."];
+                        this.instructionX = this.house.x + 150;
+                        this.instructionY = this.house.y - 50;
+                        this.currentInstruction++;
                     }
                 }
             }
@@ -424,6 +439,9 @@ var Game = /** @class */ (function () {
         if (this.day === 2) {
             total = 2;
         }
+        else if (this.day > 2) {
+            total *= 1.3;
+        }
         while (total-- > 0) {
             do {
                 var angle = Math.random() * Math.PI * 2;
@@ -527,7 +545,7 @@ var Game = /** @class */ (function () {
                                 this.world.buildings.push(new PotatoLauncher(this.selectedTile.displayX, this.selectedTile.displayY));
                                 if (this.currentInstruction === 4) {
                                     this.currentInstruction++;
-                                    this.instructionText = ["Now that your base is defended, make sure to", "explore and find new resources."];
+                                    this.instructionText = ["Now that your base is defended, make sure to", "explore and find new resources.", "", "Press space to dismiss."];
                                     this.instructionX = this.house.x + 150;
                                     this.instructionY = this.house.y - 50;
                                 }
@@ -572,11 +590,9 @@ var Game = /** @class */ (function () {
             this.tileOptions = [];
             var entity = this.world.findEntityAtPos(this.selectedTile.displayX, this.selectedTile.displayY);
             if (this.selectedTile.type === "grass") {
-                this.tileOptions = [
-                    { x: -40, y: 25, text: ["Build"], id: "build" }
-                ];
                 if (entity === null) {
                     this.tileOptions.push({ x: 90, y: 25, text: ["Plant"], id: "plant" });
+                    this.tileOptions.push({ x: -40, y: 25, text: ["Build"], id: "build" });
                 }
             }
             if (entity !== null) {

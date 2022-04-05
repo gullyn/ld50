@@ -71,7 +71,7 @@ class Bullet {
 
 class PotatoBullet extends Bullet {
 	constructor(x: number, y: number, angle: number, game: Game, target: Enemy) {
-		super(x, y, "potatobullet", angle, 10, 120, 3, game.assets.potato, target, false);
+		super(x, y, "potatobullet", angle, 10, 120, 4, game.assets.potato, target, false);
 	}
 }
 

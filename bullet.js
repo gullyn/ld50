@@ -72,7 +72,7 @@ var Bullet = /** @class */ (function () {
 var PotatoBullet = /** @class */ (function (_super) {
     __extends(PotatoBullet, _super);
     function PotatoBullet(x, y, angle, game, target) {
-        return _super.call(this, x, y, "potatobullet", angle, 10, 120, 3, game.assets.potato, target, false) || this;
+        return _super.call(this, x, y, "potatobullet", angle, 10, 120, 4, game.assets.potato, target, false) || this;
     }
     return PotatoBullet;
 }(Bullet));
