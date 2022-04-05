@@ -23,6 +23,11 @@ var World = /** @class */ (function () {
                     entity.stage = Math.min(entity.stage + 1, 2);
                 }
             }
+            else if (entity instanceof OnionPlant) {
+                if (Math.random() < 0.0003) {
+                    entity.stage = Math.min(entity.stage + 1, 2);
+                }
+            }
         }
         for (var _b = 0, _c = this.buildings; _b < _c.length; _b++) {
             var building = _c[_b];
