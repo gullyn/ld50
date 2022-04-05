@@ -126,8 +126,17 @@ var OnionPlant = /** @class */ (function (_super) {
             game.rpy(this.y) < -50 || game.rpy(this.y) > game.ctx.canvas.height) {
             return;
         }
-        game.ctx.fillStyle = "white";
-        game.ctx.fillRect(game.rpx(this.x) + 10, game.rpy(this.y) + 10, 10, 10);
+        switch (this.stage) {
+            case 0:
+                game.ctx.drawImage(game.assets.onionstage1, game.rpx(this.x), game.rpy(this.y));
+                break;
+            case 1:
+                game.ctx.drawImage(game.assets.onionstage2, game.rpx(this.x), game.rpy(this.y));
+                break;
+            case 2:
+                game.ctx.drawImage(game.assets.onionstage3, game.rpx(this.x), game.rpy(this.y));
+                break;
+        }
     };
     return OnionPlant;
 }(Entity));
@@ -183,4 +192,18 @@ var Zombie = /** @class */ (function (_super) {
         game.ctx.restore();
     };
     return Zombie;
+}(Enemy));
+var LargeZombie = /** @class */ (function (_super) {
+    __extends(LargeZombie, _super);
+    function LargeZombie(x, y) {
+        return _super.call(this, x, y, "largezombie", 30) || this;
+    }
+    LargeZombie.prototype.render = function (game) {
+        game.ctx.save();
+        game.ctx.translate(game.rpx(this.x), game.rpy(this.y));
+        game.ctx.rotate(this.angle);
+        game.ctx.drawImage(game.assets.debtcollector, -100, -92, 200, 184);
+        game.ctx.restore();
+    };
+    return LargeZombie;
 }(Enemy));

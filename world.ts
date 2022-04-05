@@ -68,6 +68,10 @@ class World {
 				this.entities[i].render(game);
 			}
 		}
+
+		for (let i = 0; i < this.buildings.length; i++) {
+			this.buildings[i].render(game);
+		}
 	}
 
 	renderEntities(game: Game) {
@@ -75,10 +79,6 @@ class World {
 			if (this.entities[i].type === "stone" || this.entities[i].type === "wood") {
 				this.entities[i].render(game);
 			}
-		}
-
-		for (let i = 0; i < this.buildings.length; i++) {
-			this.buildings[i].render(game);
 		}
 	}
 
@@ -211,7 +211,7 @@ class World {
 		}
 
 		for (let i = 0; i < 4; i++) {
-			this.entities.push(new PotatoPlant(game.house.x + 150, game.house.y - 100 + i * 50, Math.floor(Math.random() * 3), true));
+			this.entities.push(new PotatoPlant(game.house.x + 150, game.house.y - 100 + i * 50, 2, true));
 		}
 	}
 

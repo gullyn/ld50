@@ -49,6 +49,7 @@ var Turret = /** @class */ (function (_super) {
             return;
         }
         var angle = Math.atan2(min.y - this.y, min.x - this.x);
+        game.playNextShoot();
         if (this.type === "potatolauncher") {
             game.bullets.push(new PotatoBullet(this.x, this.y, angle, game, min));
         }
@@ -69,8 +70,7 @@ var PotatoLauncher = /** @class */ (function (_super) {
         return _super.call(this, x, y, "potatolauncher", 60, 10, 700) || this;
     }
     PotatoLauncher.prototype.render = function (game) {
-        game.ctx.fillStyle = "beige";
-        game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+        game.ctx.drawImage(game.assets.potatolauncher, game.rpx(this.x), game.rpy(this.y));
         game.ctx.drawImage(game.assets.potato, game.rpx(this.x) - 15, game.rpy(this.y) + 40);
         game.ctx.fillStyle = "black";
         game.ctx.font = "15px Arial";
@@ -85,8 +85,7 @@ var CarrotCannon = /** @class */ (function (_super) {
         return _super.call(this, x, y, "carrotcannon", 100, 10, 1000) || this;
     }
     CarrotCannon.prototype.render = function (game) {
-        game.ctx.fillStyle = "beige";
-        game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+        game.ctx.drawImage(game.assets.carrotcannon, game.rpx(this.x), game.rpy(this.y));
         game.ctx.drawImage(game.assets.carrot, game.rpx(this.x) - 15, game.rpy(this.y) + 40);
         game.ctx.fillStyle = "black";
         game.ctx.font = "15px Arial";
@@ -101,8 +100,7 @@ var HomingOnions = /** @class */ (function (_super) {
         return _super.call(this, x, y, "homingonions", 120, 5, 700) || this;
     }
     HomingOnions.prototype.render = function (game) {
-        game.ctx.fillStyle = "beige";
-        game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+        game.ctx.drawImage(game.assets.homingonions, game.rpx(this.x), game.rpy(this.y));
         game.ctx.drawImage(game.assets.onion, game.rpx(this.x) - 15, game.rpy(this.y) + 40);
         game.ctx.fillStyle = "black";
         game.ctx.font = "15px Arial";

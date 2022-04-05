@@ -45,6 +45,7 @@ class Turret extends Building {
 		}
 
 		const angle = Math.atan2(min.y - this.y, min.x - this.x);
+		game.playNextShoot();
 
 		if (this.type === "potatolauncher") {
 			game.bullets.push(new PotatoBullet(this.x, this.y, angle, game, min));
@@ -65,8 +66,7 @@ class PotatoLauncher extends Turret {
 	}
 
 	render(game: Game) {
-		game.ctx.fillStyle = "beige";
-		game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+		game.ctx.drawImage(game.assets.potatolauncher, game.rpx(this.x), game.rpy(this.y));
 
 		game.ctx.drawImage(game.assets.potato, game.rpx(this.x) - 15, game.rpy(this.y) + 40);
 		game.ctx.fillStyle = "black";
@@ -82,8 +82,7 @@ class CarrotCannon extends Turret {
 	}
 
 	render(game: Game) {
-		game.ctx.fillStyle = "beige";
-		game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+		game.ctx.drawImage(game.assets.carrotcannon, game.rpx(this.x), game.rpy(this.y));
 
 		game.ctx.drawImage(game.assets.carrot, game.rpx(this.x) - 15, game.rpy(this.y) + 40);
 		game.ctx.fillStyle = "black";
@@ -99,8 +98,7 @@ class HomingOnions extends Turret {
 	}
 
 	render(game: Game) {
-		game.ctx.fillStyle = "beige";
-		game.ctx.fillRect(game.rpx(this.x), game.rpy(this.y), 50, 50);
+		game.ctx.drawImage(game.assets.homingonions, game.rpx(this.x), game.rpy(this.y));
 
 		game.ctx.drawImage(game.assets.onion, game.rpx(this.x) - 15, game.rpy(this.y) + 40);
 		game.ctx.fillStyle = "black";

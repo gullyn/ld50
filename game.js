@@ -36,7 +36,7 @@ var Game = /** @class */ (function () {
         this.messages = [];
         this.enemies = [];
         this.bullets = [];
-        this.time = 4500;
+        this.time = 3000;
         this.day = 1;
         this.harvestingEntity = null;
         this.harvestingTime = 0;
@@ -54,6 +54,12 @@ var Game = /** @class */ (function () {
         this.gameOver = false;
         this.gameOverOpacity = 0;
         this.score = 0;
+        this.currentShoot = 0;
+        this.currentInstruction = 0;
+        this.instructionText = ["", ""];
+        this.instructionX = 0;
+        this.instructionY = 0;
+        this.showArrow = true;
         this.assets = {
             rock: getImage("assets/rock.png"),
             rocklarge: getImage("assets/rocklarge.png"),
@@ -72,6 +78,9 @@ var Game = /** @class */ (function () {
             carrotstage1: getImage("assets/carrotstage1.png"),
             carrotstage2: getImage("assets/carrotstage2.png"),
             carrotstage3: getImage("assets/carrotstage3.png"),
+            onionstage1: getImage("assets/onionstage1.png"),
+            onionstage2: getImage("assets/onionstage2.png"),
+            onionstage3: getImage("assets/onionstage3.png"),
             player1: getImage("assets/player1.png"),
             player2: getImage("assets/player2.png"),
             player3: getImage("assets/player3.png"),
@@ -80,9 +89,18 @@ var Game = /** @class */ (function () {
             player6: getImage("assets/player6.png"),
             player7: getImage("assets/player7.png"),
             player8: getImage("assets/player8.png"),
-            debtcollector: getImage("assets/debtcollector.png")
+            debtcollector: getImage("assets/debtcollector.png"),
+            potatolauncher: getImage("assets/potatolauncher.png"),
+            carrotcannon: getImage("assets/carrotcannon.png"),
+            homingonions: getImage("assets/homingonions.png")
         };
         this.player.image = this.assets.player1;
+        this.audio = {
+            music1: getAudio("audio/music1.mp3"),
+            shoot1: getAudio("audio/shoot.wav"),
+            shoot2: getAudio("audio/shoot.wav"),
+            shoot3: getAudio("audio/shoot.wav")
+        };
     }
     Game.prototype.update = function () {
         if (this.newItemUnlocked || this.inIntro || this.gameOver) {
@@ -132,6 +150,12 @@ var Game = /** @class */ (function () {
                 this.newItemName = "Stone";
                 this.newItemText = ["Used for construction", ""];
                 this.newItemImage = this.assets.rocklarge;
+                if (this.currentInstruction === 2) {
+                    this.instructionText = ["Click on a tile, press 'plant'", "and select 'potato'."];
+                    this.instructionX = this.house.x + 150;
+                    this.instructionY = this.house.y - 50;
+                    this.currentInstruction++;
+                }
             }
             else if (this.harvestingEntity.type === "potato" && !this.potatoDiscovered) {
                 this.potatoDiscovered = true;
@@ -139,6 +163,25 @@ var Game = /** @class */ (function () {
                 this.newItemName = "Potato";
                 this.newItemText = ["Basic ammunition. Easy to farm, though not", "as effective against tougher debt collectors."];
                 this.newItemImage = this.assets.potatolarge;
+                if (this.currentInstruction === 1) {
+                    this.currentInstruction++;
+                    if (!this.stoneDiscovered) {
+                        var min = null, minDist = Infinity;
+                        for (var _i = 0, _a = this.world.entities; _i < _a.length; _i++) {
+                            var entity = _a[_i];
+                            if (dist(entity.x, entity.y, this.player.x, this.player.y) < minDist && entity.type === "stone") {
+                                min = entity;
+                                minDist = dist(entity.x, entity.y, this.player.x, this.player.y);
+                            }
+                        }
+                        this.instructionX = min.x;
+                        this.instructionY = min.y;
+                        this.instructionText = ["Click on a rock", "and press 'harvest'."];
+                    }
+                    else {
+                        this.currentInstruction = 3;
+                    }
+                }
             }
             else if (this.harvestingEntity.type === "carrot" && !this.carrotDiscovered) {
                 this.carrotDiscovered = true;
@@ -288,6 +331,21 @@ var Game = /** @class */ (function () {
             this.ctx.font = "20px Arial";
             this.ctx.fillText(this.enemies.length + " debt collectors remaining", this.ctx.canvas.width / 2, this.ctx.canvas.height - 30);
         }
+        if (this.currentInstruction < 6) {
+            this.ctx.textAlign = "center";
+            this.ctx.font = "bold 15px Arial";
+            this.ctx.fillStyle = "black";
+            for (var i = 0; i < this.instructionText.length; i++) {
+                this.ctx.fillText(this.instructionText[i], this.rpx(this.instructionX) + 150, this.rpy(this.instructionY) - (80 - 20 * i));
+            }
+            if (this.showArrow) {
+                this.ctx.lineWidth = 8;
+                this.ctx.beginPath();
+                this.ctx.lineTo(this.rpx(this.instructionX) + 25, this.rpy(this.instructionY) + 25);
+                this.ctx.lineTo(this.rpx(this.instructionX) + 90, this.rpy(this.instructionY) - 40);
+                this.ctx.stroke();
+            }
+        }
         if (this.newItemUnlocked) {
             this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
             this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
@@ -344,15 +402,41 @@ var Game = /** @class */ (function () {
             }
         }
     };
+    Game.prototype.playNextShoot = function () {
+        if (this.currentShoot >= 3) {
+            this.currentShoot = 0;
+        }
+        switch (this.currentShoot) {
+            case 0:
+                this.audio.shoot1.play();
+                break;
+            case 1:
+                this.audio.shoot2.play();
+                break;
+            case 2:
+                this.audio.shoot3.play();
+                break;
+        }
+        this.currentShoot++;
+    };
     Game.prototype.generateEnemies = function () {
-        var total = Math.floor(Math.pow(this.day, 1.25));
+        var total = Math.round(Math.pow(this.day, 1.35));
+        if (this.day === 2) {
+            total = 2;
+        }
         while (total-- > 0) {
             do {
                 var angle = Math.random() * Math.PI * 2;
                 var x = Math.cos(angle) * (Math.floor(Math.random() * 300) + 1700) + this.house.x;
                 var y = Math.sin(angle) * (Math.floor(Math.random() * 300) + 1700) + this.house.y;
             } while (x < -this.world.width * 25 || y < -this.world.height * 25 || x > this.world.width * 25 || y > this.world.height * 25);
-            this.enemies.push(new Zombie(x, y));
+            if (this.day >= 3 && total > 3 && Math.random() < 0.5) {
+                this.enemies.push(new LargeZombie(x, y));
+                total -= 3;
+            }
+            else {
+                this.enemies.push(new Zombie(x, y));
+            }
         }
     };
     Game.prototype.rpx = function (x) {
@@ -381,8 +465,7 @@ var Game = /** @class */ (function () {
                     if (option.id === "plant") {
                         this.tileOptions = [
                             { x: -40, y: 25, text: ["Potato"], id: "potato" },
-                            { x: 90, y: 25, text: ["Carrot"], id: "carrot" },
-                            { x: 25, y: -40, text: ["Onion"], id: "onion" }
+                            { x: 90, y: 25, text: ["Carrot"], id: "carrot" }
                         ];
                     }
                     if (option.id === "build") {
@@ -442,6 +525,12 @@ var Game = /** @class */ (function () {
                         switch (option.id) {
                             case "potatolauncher":
                                 this.world.buildings.push(new PotatoLauncher(this.selectedTile.displayX, this.selectedTile.displayY));
+                                if (this.currentInstruction === 4) {
+                                    this.currentInstruction++;
+                                    this.instructionText = ["Now that your base is defended, make sure to", "explore and find new resources."];
+                                    this.instructionX = this.house.x + 150;
+                                    this.instructionY = this.house.y - 50;
+                                }
                                 break;
                             case "carrotcannon":
                                 this.world.buildings.push(new CarrotCannon(this.selectedTile.displayX, this.selectedTile.displayY));
@@ -451,6 +540,13 @@ var Game = /** @class */ (function () {
                                 break;
                             case "potato":
                                 this.world.entities.push(new PotatoPlant(this.selectedTile.displayX, this.selectedTile.displayY, 0, true));
+                                if (this.currentInstruction === 3) {
+                                    this.currentInstruction++;
+                                    this.instructionText = ["When you have collected enough resources, click on a tile,", "press 'build' and select 'potato launcher'", "in a spot close to your base.", "", "Press space to skip to next message."];
+                                    this.instructionX = this.house.x + 150;
+                                    this.instructionY = this.house.y - 50;
+                                    this.showArrow = false;
+                                }
                                 break;
                             case "carrot":
                                 this.world.entities.push(new CarrotPlant(this.selectedTile.displayX, this.selectedTile.displayY, 0, true));
@@ -467,6 +563,9 @@ var Game = /** @class */ (function () {
             mouseY >= -this.world.height / 2 && mouseY <= this.world.height / 2) {
             if (dist(mouseX * 50, mouseY * 50, this.player.x, this.player.y) > 600) {
                 this.messages.push({ x: mouseX * 50, y: mouseY * 50, text: "Too far away", time: 120 });
+                return;
+            }
+            if (Math.abs(mouseX * 50 - this.house.x) <= 100 && Math.abs(mouseY * 50 - this.house.y) <= 150) {
                 return;
             }
             this.selectedTile = this.world.grid[mouseX + this.world.width / 2][mouseY + this.world.width / 2];
@@ -508,8 +607,23 @@ var Game = /** @class */ (function () {
         if (event.key === " ") {
             this.newItemUnlocked = false;
             this.introStage++;
-            if (this.introStage >= 4) {
+            if (this.introStage === 4) {
                 this.inIntro = false;
+                this.audio.music1.play();
+                this.audio.music1.volume = 0.2;
+                this.instructionText = ["Click on a potato plant,", "and press 'harvest'."];
+                this.instructionX = this.house.x + 150;
+                this.instructionY = this.house.y - 50;
+                this.currentInstruction = 1;
+            }
+            if (this.currentInstruction === 4) {
+                this.currentInstruction++;
+                this.instructionText = ["Now that your base is defended, make sure to", "explore and find new resources.", "", "Press space to dismiss."];
+                this.instructionX = this.house.x + 150;
+                this.instructionY = this.house.y - 50;
+            }
+            else if (this.currentInstruction === 5) {
+                this.instructionText = [];
             }
         }
     };
@@ -522,4 +636,9 @@ function getImage(src) {
     var img = new Image();
     img.src = src;
     return img;
+}
+function getAudio(src) {
+    var audio = new Audio();
+    audio.src = src;
+    return audio;
 }

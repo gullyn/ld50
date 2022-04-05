@@ -59,15 +59,15 @@ var World = /** @class */ (function () {
                 this.entities[i].render(game);
             }
         }
+        for (var i = 0; i < this.buildings.length; i++) {
+            this.buildings[i].render(game);
+        }
     };
     World.prototype.renderEntities = function (game) {
         for (var i = 0; i < this.entities.length; i++) {
             if (this.entities[i].type === "stone" || this.entities[i].type === "wood") {
                 this.entities[i].render(game);
             }
-        }
-        for (var i = 0; i < this.buildings.length; i++) {
-            this.buildings[i].render(game);
         }
     };
     World.prototype.generateWorld = function () {
@@ -177,7 +177,7 @@ var World = /** @class */ (function () {
             }
         }
         for (var i = 0; i < 4; i++) {
-            this.entities.push(new PotatoPlant(game.house.x + 150, game.house.y - 100 + i * 50, Math.floor(Math.random() * 3), true));
+            this.entities.push(new PotatoPlant(game.house.x + 150, game.house.y - 100 + i * 50, 2, true));
         }
     };
     World.prototype.deleteOverlappingEntities = function () {
